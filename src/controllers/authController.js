@@ -6,8 +6,8 @@ const authController = {
   login: async (req, res) => {
     try {
       const { username, password } = req.body;
+      console.log('Login attempt:', username);
 
-      // Tìm user và lấy cả password + role
       const user = await User.findOne({ username })
         .select('+password')
         .populate('roleId');
@@ -16,13 +16,11 @@ const authController = {
         return res.status(401).json({ message: 'Tài khoản không tồn tại' });
       }
 
-      // Kiểm tra password
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(401).json({ message: 'Mật khẩu không đúng' });
       }
 
-      // Kiểm tra role admin
       if (user.roleId.roleName !== 'admin') {
         return res.status(403).json({ message: 'Không có quyền truy cập' });
       }
@@ -33,16 +31,16 @@ const authController = {
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
       );
+      console.log('Generated token:', token);
 
-      // Gửi token qua cookie
+      // Set cookie
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        maxAge: 24 * 60 * 60 * 1000
       });
 
-      // Trả về thông tin user (không bao gồm password)
       const { password: _, ...userWithoutPassword } = user.toObject();
       res.json({
         user: userWithoutPassword,

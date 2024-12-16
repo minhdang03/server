@@ -28,10 +28,12 @@ const userController = {
   // POST /api/admin/users
   create: async (req, res) => {
     try {
-      const { username, password, fullname, roleId } = req.body;
+      const { username, password, fullName, roleId } = req.body;
+      
+      console.log('Request body:', req.body);
 
       // Validate required fields
-      if (!username || !password || !fullname || !roleId) {
+      if (!username || !password || !fullName) {
         return res.status(400).json({ 
           message: 'Vui lòng điền đầy đủ thông tin' 
         });
@@ -45,12 +47,16 @@ const userController = {
         });
       }
 
-      // Kiểm tra role có tồn tại
-      const role = await Role.findById(roleId);
-      if (!role) {
-        return res.status(400).json({ 
-          message: 'Role không hợp lệ' 
-        });
+      // Lấy role member mặc định nếu không có roleId
+      let userRoleId = roleId;
+      if (!roleId) {
+        const memberRole = await Role.findOne({ roleName: 'member' });
+        if (!memberRole) {
+          return res.status(400).json({
+            message: 'Không tìm thấy role member mặc định'
+          });
+        }
+        userRoleId = memberRole._id;
       }
 
       // Hash password
@@ -61,16 +67,18 @@ const userController = {
       const newUser = new User({
         username,
         password: hashedPassword,
-        fullname,
-        roleId
+        fullName,
+        roleId: userRoleId
       });
+
+      console.log('New user data:', newUser);
 
       await newUser.save();
 
       // Trả về user (không có password)
       const userResponse = await User.findById(newUser._id)
         .select('-password')
-        .populate('roleId', 'roleName');
+        .populate('roleId');
 
       res.status(201).json(userResponse);
     } catch (error) {
@@ -82,7 +90,7 @@ const userController = {
   // PUT /api/admin/users/:id
   update: async (req, res) => {
     try {
-      const { fullname, password, roleId } = req.body;
+      const { fullName, password, roleId } = req.body;
       const userId = req.params.id;
 
       // Kiểm tra user tồn tại
@@ -105,7 +113,7 @@ const userController = {
 
       // Chuẩn bị dữ liệu cập nhật
       const updateData = {};
-      if (fullname) updateData.fullname = fullname;
+      if (fullName) updateData.fullName = fullName;
       if (roleId) updateData.roleId = roleId;
       if (password) {
         const salt = await bcrypt.genSalt(10);
