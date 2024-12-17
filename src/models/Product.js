@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: true
+        required: false
     },
     brand: {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,7 +49,7 @@ const productSchema = new mongoose.Schema({
         ref: 'Category', // Liên kết đến Category schema
         required: true
     }
-}, { timestamps: true });
+});
 
 const Product = mongoose.model('Product', productSchema);
 

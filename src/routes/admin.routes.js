@@ -6,6 +6,7 @@ const { userController } = require('../controllers/admin/userController');
 const brandController = require('../controllers/admin/brandController');
 const categoryController = require('../controllers/admin/categoryController');
 const productController = require('../controllers/admin/productController');
+const orderController = require('../controllers/admin/orderController');
 
 // Public routes (không cần auth)
 router.post('/auth/login', authController.login);
@@ -43,5 +44,13 @@ router.get('/products/:id', productController.getProductById);
 router.post('/products', productController.createProduct);
 router.put('/products/:id', productController.updateProduct);
 router.delete('/products/:id', productController.deleteProduct);
+
+// Order routes
+router.get('/orders', orderController.getAllOrders);
+router.get('/orders/stats', orderController.getOrderStats);
+router.get('/orders/:id', orderController.getOrderById);
+router.put('/orders/:id/status', orderController.updateOrderStatus);
+router.put('/orders/:id/shipping', orderController.updateShippingInfo);
+router.put('/orders/:id/payment', orderController.updatePaymentStatus);
 
 module.exports = router;

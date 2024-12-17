@@ -5,17 +5,51 @@ const brandController = {
     // CREATE - Tạo thương hiệu mới
     async createBrand(req, res) {
         try {
-            const newBrand = new Brand(req.body);
+            console.log('Request body received:', req.body);
+
+            // Kiểm tra xem tên thương hiệu đã tồn tại chưa
+            const existingBrand = await Brand.findOne({ name: req.body.name });
+            if (existingBrand) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Tên thương hiệu đã tồn tại"
+                });
+            }
+
+            const brandData = {
+                name: req.body.name,
+                description: req.body.description || ''
+            };
+            
+            console.log('Brand data to save:', brandData);
+
+            const newBrand = new Brand(brandData);
+            console.log('New brand instance:', newBrand);
+
             const savedBrand = await newBrand.save();
+            console.log('Saved brand:', savedBrand);
+
             res.status(201).json({
                 success: true,
                 data: savedBrand
             });
         } catch (error) {
+            console.error('Error in createBrand:', error);
+            console.error('Error stack:', error.stack);
+            
+            // Xử lý lỗi trùng tên (nếu somehow bị miss ở bước check đầu tiên)
+            if (error.code === 11000) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Tên thương hiệu đã tồn tại"
+                });
+            }
+
             res.status(500).json({
                 success: false,
                 message: "Không thể tạo thương hiệu",
-                error: error.message
+                error: error.message,
+                stack: error.stack
             });
         }
     },
@@ -75,9 +109,15 @@ const brandController = {
     // UPDATE - Cập nhật thương hiệu
     async updateBrand(req, res) {
         try {
+            // Đảm bảo description có giá trị mặc định là chuỗi rỗng khi cập nhật
+            const brandData = {
+                name: req.body.name,
+                description: req.body.description || '' // Nếu không có description thì mặc định là ''
+            };
+
             const updatedBrand = await Brand.findByIdAndUpdate(
                 req.params.id,
-                req.body,
+                brandData,
                 { new: true, runValidators: true }
             );
 
