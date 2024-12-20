@@ -5,20 +5,17 @@ services:
     build: .
     ports:
       - "4000:4000"
-    env_file:
-      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
+      - FRONTEND_URL=${FRONTEND_URL}
     volumes:
       - .:/app
       - /app/node_modules
-    depends_on:
-      - mongo
-
-  mongo:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-
-volumes:
-  mongodb_data: 
+    restart: unless-stopped
+    working_dir: /app
