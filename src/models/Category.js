@@ -4,7 +4,8 @@ const categorySchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim: true
     },
     parentCategory: {
         type: mongoose.Schema.Types.ObjectId,
@@ -14,8 +15,31 @@ const categorySchema = new mongoose.Schema({
     description: {
         type: String,
         default: ''
+    },
+    slug: {
+        type: String,
+        unique: true,
+        trim: true
+    },
+    active: {
+        type: Boolean,
+        default: true
     }
-}); // Bỏ timestamps
+});
+
+categorySchema.pre('save', function(next) {
+    if (this.isModified('name')) {
+        this.slug = this.name.toLowerCase().replace(/ /g, '-');
+    }
+    next();
+});
+
+categorySchema.pre('save', async function(next) {
+    if (this.parentCategory && this._id.equals(this.parentCategory)) {
+        return next(new Error('Category cannot be its own parent.'));
+    }
+    next();
+});
 
 const Category = mongoose.model('Category', categorySchema);
 

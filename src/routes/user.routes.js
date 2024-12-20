@@ -8,8 +8,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 // Product routes
 router.get('/products', productController.getProducts);
-router.get('/products/:id', productController.getProductDetail);
 router.get('/products/category/:categoryId', productController.getProductsByCategory);
+router.get('/products/:id', productController.getProductDetail);
 // Category routes
 router.get('/categories', categoryController.getCategories);
 router.get('/categories/:id', categoryController.getCategoryById);

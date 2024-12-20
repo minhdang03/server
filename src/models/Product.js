@@ -1,55 +1,22 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String,
-        required: false
-    },
-    brand: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Brand', // Liên kết đến Brand schema
-        required: true
-    },
-    images: [{
-        type: String,
-        required: true
-    }],
-    variants: [{
-        sku: {
-            type: String,
-            required: true,
-            unique: true
-        },
-        attributes: {
-            SIZE: { type: String, required: true }
-        },
-        price: {
-            type: Number,
-            required: true,
-            min: 0
-        },
-        costPrice: {
-            type: Number, // Giá vốn cho từng phiên bản
-            required: true,
-            min: 0
-        },
-        stock: {
-            type: Number,
-            required: true,
-            min: 0,
-            default: 0
+    name: { type: String, required: true },
+    description: { type: String, default: "" },
+    brand: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', required: true },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    variants: [
+        {
+            sku: { type: String, required: true, unique: true },
+            name: { type: String, required: true }, // Tên riêng cho phiên bản
+            image: { type: String, required: true }, // Hình ảnh riêng cho phiên bản
+            attributes: { type: Map, of: String }, // Các thuộc tính như SIZE, TYPE
+            price: { type: Number, required: true, min: 0 },
+            costPrice: { type: Number, required: true, min: 0 },
+            stock: { type: Number, default: 0, min: 0 }
         }
-    }],
-    category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category', // Liên kết đến Category schema
-        required: true
-    }
-});
+    ]
+}, { timestamps: true });
 
 const Product = mongoose.model('Product', productSchema);
 
